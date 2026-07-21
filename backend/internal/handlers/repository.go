@@ -88,3 +88,182 @@ func (h *RepositoryHandler) GetRepository(c *fiber.Ctx) error {
 		"createdAt":     repo.CreatedAt,
 	})
 }
+
+func (h *RepositoryHandler) GetCommitDetail(c *fiber.Ctx) error {
+	repoID := c.Params("repositoryId")
+	hash := c.Params("hash")
+	if repoID == "" || hash == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "Repository ID and commit hash are required"})
+	}
+
+	detail, err := h.service.GetCommitDetail(repoID, hash)
+	if err != nil {
+		h.logger.Error("Failed to get commit detail", zap.Error(err), zap.String("repositoryId", repoID), zap.String("hash", hash))
+		switch err {
+		case services.ErrRepositoryNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "Repository not found"})
+		case services.ErrCommitNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "Commit not found"})
+		default:
+			return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: "Internal server error"})
+		}
+	}
+
+	return c.JSON(detail)
+}
+
+func (h *RepositoryHandler) GetCommitTree(c *fiber.Ctx) error {
+	repoID := c.Params("repositoryId")
+	hash := c.Params("hash")
+	if repoID == "" || hash == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "Repository ID and commit hash are required"})
+	}
+
+	tree, err := h.service.GetCommitTree(repoID, hash)
+	if err != nil {
+		h.logger.Error("Failed to get commit tree", zap.Error(err), zap.String("repositoryId", repoID), zap.String("hash", hash))
+		switch err {
+		case services.ErrRepositoryNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "Repository not found"})
+		case services.ErrCommitNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "Commit not found"})
+		default:
+			return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: "Internal server error"})
+		}
+	}
+
+	return c.JSON(tree)
+}
+
+func (h *RepositoryHandler) GetFileContent(c *fiber.Ctx) error {
+	repoID := c.Params("repositoryId")
+	hash := c.Params("hash")
+	filePath := c.Query("path")
+	if repoID == "" || hash == "" || filePath == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "Repository ID, commit hash, and file path are required"})
+	}
+
+	content, err := h.service.GetFileContent(repoID, hash, filePath)
+	if err != nil {
+		h.logger.Error("Failed to get file content", zap.Error(err), zap.String("repositoryId", repoID), zap.String("hash", hash), zap.String("path", filePath))
+		switch err {
+		case services.ErrRepositoryNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "Repository not found"})
+		case services.ErrFileNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "File not found"})
+		default:
+			return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: "Internal server error"})
+		}
+	}
+
+	return c.JSON(content)
+}
+
+func (h *RepositoryHandler) GetCommitDiff(c *fiber.Ctx) error {
+	repoID := c.Params("repositoryId")
+	hash := c.Params("hash")
+	if repoID == "" || hash == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "Repository ID and commit hash are required"})
+	}
+
+	diff, err := h.service.GetCommitDiff(repoID, hash)
+	if err != nil {
+		h.logger.Error("Failed to get commit diff", zap.Error(err), zap.String("repositoryId", repoID), zap.String("hash", hash))
+		switch err {
+		case services.ErrRepositoryNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "Repository not found"})
+		case services.ErrCommitNotFound:
+			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "Commit not found"})
+		default:
+			return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: "Internal server error"})
+		}
+	}
+
+	return c.JSON(diff)
+}
+
+func (h *RepositoryHandler) GetEvolutionStats(c *fiber.Ctx) error {
+	repoID := c.Params("repositoryId")
+	if repoID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "Repository ID is required"})
+	}
+
+	stats, err := h.service.GetEvolutionStats(repoID)
+	if err != nil {
+		if err == services.ErrRepositoryNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "Repository not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: "Failed to get evolution stats"})
+	}
+
+	return c.JSON(stats)
+}
+
+func (h *RepositoryHandler) GetContributors(c *fiber.Ctx) error {
+	repoID := c.Params("repositoryId")
+	if repoID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "Repository ID is required"})
+	}
+
+	contribs, err := h.service.GetContributors(repoID)
+	if err != nil {
+		if err == services.ErrRepositoryNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "Repository not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: "Failed to get contributors"})
+	}
+
+	return c.JSON(contribs)
+}
+
+func (h *RepositoryHandler) GetHotspots(c *fiber.Ctx) error {
+	repoID := c.Params("repositoryId")
+	if repoID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "Repository ID is required"})
+	}
+
+	hotspots, err := h.service.GetHotspots(repoID)
+	if err != nil {
+		if err == services.ErrRepositoryNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "Repository not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: "Failed to get hotspots"})
+	}
+
+	return c.JSON(hotspots)
+}
+
+func (h *RepositoryHandler) GetMilestones(c *fiber.Ctx) error {
+	repoID := c.Params("repositoryId")
+	if repoID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "Repository ID is required"})
+	}
+
+	milestones, err := h.service.GetMilestones(repoID)
+	if err != nil {
+		if err == services.ErrRepositoryNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "Repository not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: "Failed to get milestones"})
+	}
+
+	return c.JSON(milestones)
+}
+
+func (h *RepositoryHandler) GetFileHistory(c *fiber.Ctx) error {
+	repoID := c.Params("repositoryId")
+	filePath := c.Query("path")
+	if repoID == "" || filePath == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "Repository ID and file path are required"})
+	}
+
+	history, err := h.service.GetFileHistory(repoID, filePath)
+	if err != nil {
+		if err == services.ErrRepositoryNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "Repository not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: "Failed to get file history"})
+	}
+
+	return c.JSON(history)
+}
