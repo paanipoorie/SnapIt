@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { MilestoneBadge } from "./MilestoneBadge";
+import { Milestone } from "@/lib/api";
 
 interface CommitMarkerProps {
   commit: Commit;
@@ -9,6 +11,7 @@ interface CommitMarkerProps {
   isSelected: boolean;
   onClick: () => void;
   isLast?: boolean;
+  milestone?: Milestone;
 }
 
 interface Commit {
@@ -25,6 +28,7 @@ export function CommitMarker({
   isSelected,
   onClick,
   isLast,
+  milestone,
 }: CommitMarkerProps) {
   const shortHash = commit.hash.slice(0, 7);
   const shortMessage = commit.message.split("\n")[0];
@@ -95,11 +99,14 @@ export function CommitMarker({
           )}
           onClick={onClick}
         >
-          <div className="flex items-center gap-2 mb-2">
-            <span className="font-mono text-xs text-muted-foreground">
-              {shortHash}
-            </span>
-            <span className="text-xs text-muted-foreground">{date}</span>
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs text-muted-foreground">
+                {shortHash}
+              </span>
+              <span className="text-xs text-muted-foreground">{date}</span>
+            </div>
+            {milestone && <MilestoneBadge milestone={milestone} />}
           </div>
           <h4 className="font-medium text-foreground truncate">
             {shortMessage}

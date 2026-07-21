@@ -2,23 +2,28 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Loader2, AlertCircle, GitBranch, ChevronUp, ChevronDown, ExternalLink } from "lucide-react";
+import { Loader2, AlertCircle, GitBranch, ExternalLink, Clock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Timeline } from "@/components/timeline/Timeline";
 import { Inspector } from "@/components/timeline/Inspector";
+import { EvolutionView } from "@/components/evolution/EvolutionView";
+import { FileHistoryModal } from "@/components/evolution/FileHistoryModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { loadRepository, getTimeline, Commit } from "@/lib/api";
+import { loadRepository, getTimeline, getMilestones, Commit, Milestone } from "@/lib/api";
 
 export default function TimelinePage() {
   const [repositoryUrl, setRepositoryUrl] = useState("");
   const [repositoryId, setRepositoryId] = useState<string | null>(null);
   const [commits, setCommits] = useState<Commit[]>([]);
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingTimeline, setIsLoadingTimeline] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"timeline" | "evolution">("timeline");
+  const [fileHistoryPath, setFileHistoryPath] = useState<string | null>(null);
 
   const handleLoadRepository = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,14 +50,18 @@ export default function TimelinePage() {
     setError(null);
 
     try {
-      const timeline = await getTimeline(repositoryId);
+      const [timeline, ms] = await Promise.all([
+        getTimeline(repositoryId),
+        getMilestones(repositoryId).catch(() => []),
+      ]);
       setCommits(timeline);
+      setMilestones(ms);
       if (timeline.length > 0) {
         setSelectedIndex(timeline.length - 1);
       }
       setIsLoadingTimeline(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load timeline");
+      setError(err instanceof Error ? err.message : "Failed to load repository data");
       setIsLoadingTimeline(false);
     }
   };
@@ -62,6 +71,14 @@ export default function TimelinePage() {
       handleLoadTimeline();
     }
   }, [repositoryId]);
+
+  const handleSelectCommitByHash = (hash: string) => {
+    const idx = commits.findIndex((c) => c.hash.toLowerCase() === hash.toLowerCase());
+    if (idx !== -1) {
+      setSelectedIndex(idx);
+      setViewMode("timeline");
+    }
+  };
 
   const selectedCommit = selectedIndex !== null ? commits[selectedIndex] : null;
 
@@ -77,7 +94,7 @@ export default function TimelinePage() {
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-<ExternalLink className="h-4 w-4" />
+              <ExternalLink className="h-4 w-4" />
               GitHub
             </a>
           </div>
@@ -207,7 +224,36 @@ export default function TimelinePage() {
               <GitBranch className="h-3 w-3" />
               <span>{commits.length} commits</span>
             </motion.div>
+
+            {/* View Mode Toggle */}
+            <div className="flex items-center bg-muted/60 p-1 rounded-lg border text-xs font-medium">
+              <button
+                onClick={() => setViewMode("timeline")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1 rounded-md transition-all",
+                  viewMode === "timeline"
+                    ? "bg-background text-foreground shadow-sm font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Clock className="h-3.5 w-3.5" />
+                Timeline
+              </button>
+              <button
+                onClick={() => setViewMode("evolution")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1 rounded-md transition-all",
+                  viewMode === "evolution"
+                    ? "bg-background text-foreground shadow-sm font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                Evolution
+              </button>
+            </div>
           </div>
+
           <a
             href={`https://github.com/${repositoryId}`}
             target="_blank"
@@ -221,53 +267,75 @@ export default function TimelinePage() {
       </header>
 
       <main className="flex-1 flex overflow-hidden">
-        <div className="w-full lg:w-3/5 flex flex-col min-w-0">
-          {isLoadingTimeline && (
-            <div className="border-b bg-background/50 backdrop-blur-sm px-4 py-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Loading timeline...</span>
-              </div>
-            </div>
-          )}
-
-          {error && !isLoadingTimeline && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="border-b bg-destructive/10 border-destructive/20 px-4 py-3"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>Failed to load timeline</span>
+        {viewMode === "timeline" ? (
+          <>
+            <div className="w-full lg:w-3/5 flex flex-col min-w-0">
+              {isLoadingTimeline && (
+                <div className="border-b bg-background/50 backdrop-blur-sm px-4 py-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Loading timeline...</span>
+                  </div>
                 </div>
-                <button
-                  onClick={handleLoadTimeline}
-                  className="text-sm text-destructive hover:underline"
+              )}
+
+              {error && !isLoadingTimeline && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="border-b bg-destructive/10 border-destructive/20 px-4 py-3"
                 >
-                  Retry
-                </button>
-              </div>
-            </motion.div>
-          )}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>Failed to load timeline</span>
+                    </div>
+                    <button
+                      onClick={handleLoadTimeline}
+                      className="text-sm text-destructive hover:underline"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                </motion.div>
+              )}
 
-          <Timeline
-            repositoryId={repositoryId}
-            commits={commits}
-            selectedIndex={selectedIndex}
-            onSelect={setSelectedIndex}
-            isLoading={isLoadingTimeline}
-          />
-        </div>
+              <Timeline
+                repositoryId={repositoryId}
+                commits={commits}
+                selectedIndex={selectedIndex}
+                onSelect={setSelectedIndex}
+                isLoading={isLoadingTimeline}
+                milestones={milestones}
+              />
+            </div>
 
-        <div className="hidden lg:block lg:w-2/5 border-l flex flex-col min-w-0">
-          <Inspector
-            commit={selectedCommit}
-            repositoryId={repositoryId}
-          />
-        </div>
+            <div className="hidden lg:block lg:w-2/5 border-l flex flex-col min-w-0">
+              <Inspector
+                commit={selectedCommit}
+                repositoryId={repositoryId}
+              />
+            </div>
+          </>
+        ) : (
+          <div className="w-full h-full overflow-y-auto">
+            <EvolutionView
+              repositoryId={repositoryId}
+              onOpenFileHistory={(filePath) => setFileHistoryPath(filePath)}
+              onSelectCommit={handleSelectCommitByHash}
+            />
+          </div>
+        )}
       </main>
+
+      {/* File History Modal */}
+      <FileHistoryModal
+        isOpen={Boolean(fileHistoryPath)}
+        onClose={() => setFileHistoryPath(null)}
+        repositoryId={repositoryId}
+        filePath={fileHistoryPath}
+        onSelectCommit={handleSelectCommitByHash}
+      />
     </div>
   );
 }

@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { CommitMarker } from "./CommitMarker";
 import { Submarine } from "./Submarine";
 
+import { Milestone } from "@/lib/api";
+
 interface Commit {
   hash: string;
   author: string;
@@ -21,6 +23,7 @@ interface TimelineProps {
   selectedIndex: number | null;
   onSelect: (index: number) => void;
   isLoading?: boolean;
+  milestones?: Milestone[];
 }
 
 export function Timeline({
@@ -29,6 +32,7 @@ export function Timeline({
   selectedIndex,
   onSelect,
   isLoading,
+  milestones = [],
 }: TimelineProps) {
   const timelineRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -160,6 +164,7 @@ export function Timeline({
                   isSelected={selectedIndex === index}
                   onClick={() => handleMarkerClick(index)}
                   isLast={index === commits.length - 1}
+                  milestone={milestones.find((m) => m.commitHash === commit.hash)}
                 />
               </motion.div>
             ))}

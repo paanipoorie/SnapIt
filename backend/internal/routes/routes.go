@@ -26,4 +26,9 @@ func SetupRoutes(app *fiber.App, repoService *services.RepositoryService, logger
 	api.Get("/repositories/:repositoryId/commits/:hash/tree", repoHandler.GetCommitTree)
 	api.Get("/repositories/:repositoryId/commits/:hash/file", repoHandler.GetFileContent)
 	api.Get("/repositories/:repositoryId/commits/:hash/diff", repoHandler.GetCommitDiff)
+	api.Get("/repositories/:repositoryId/evolution", repoHandler.GetEvolutionStats)
+	api.Get("/repositories/:repositoryId/contributors", repoHandler.GetContributors)
+	api.Get("/repositories/:repositoryId/hotspots", repoHandler.GetHotspots)
+	api.Get("/repositories/:repositoryId/milestones", repoHandler.GetMilestones)
+	api.Get("/repositories/:repositoryId/file-history", repoHandler.GetFileHistory)
 }

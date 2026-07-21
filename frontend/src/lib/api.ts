@@ -134,6 +134,97 @@ export const getCommitDiff = async (
   return response.data;
 };
 
+export interface GrowthPoint {
+  date: string;
+  commits: number;
+  fileCount: number;
+  estimatedLoc: number;
+}
+
+export interface ActivityPoint {
+  date: string;
+  commits: number;
+  additions: number;
+  deletions: number;
+}
+
+export interface EvolutionStatsResponse {
+  totalCommits: number;
+  totalContributors: number;
+  totalFiles: number;
+  totalLoc: number;
+  growthHistory: GrowthPoint[];
+  activityHistory: ActivityPoint[];
+}
+
+export interface ContributorStats {
+  name: string;
+  email: string;
+  commitCount: number;
+  additions: number;
+  deletions: number;
+  firstCommit: string;
+  lastCommit: string;
+  sharePercentage: number;
+}
+
+export interface HotspotFile {
+  path: string;
+  commitCount: number;
+  additions: number;
+  deletions: number;
+  lastModified: string;
+}
+
+export interface Milestone {
+  name: string;
+  commitHash: string;
+  date: string;
+  type: "tag" | "release" | "merge" | "initial";
+  message: string;
+}
+
+export interface FileHistoryEntry {
+  commitHash: string;
+  author: string;
+  email: string;
+  date: string;
+  message: string;
+  action: string;
+  additions: number;
+  deletions: number;
+}
+
+export const getEvolutionStats = async (repositoryId: string): Promise<EvolutionStatsResponse> => {
+  const response = await api.get<EvolutionStatsResponse>(`/repositories/${repositoryId}/evolution`);
+  return response.data;
+};
+
+export const getContributors = async (repositoryId: string): Promise<ContributorStats[]> => {
+  const response = await api.get<ContributorStats[]>(`/repositories/${repositoryId}/contributors`);
+  return response.data;
+};
+
+export const getHotspots = async (repositoryId: string): Promise<HotspotFile[]> => {
+  const response = await api.get<HotspotFile[]>(`/repositories/${repositoryId}/hotspots`);
+  return response.data;
+};
+
+export const getMilestones = async (repositoryId: string): Promise<Milestone[]> => {
+  const response = await api.get<Milestone[]>(`/repositories/${repositoryId}/milestones`);
+  return response.data;
+};
+
+export const getFileHistory = async (
+  repositoryId: string,
+  filePath: string
+): Promise<FileHistoryEntry[]> => {
+  const response = await api.get<FileHistoryEntry[]>(`/repositories/${repositoryId}/file-history`, {
+    params: { path: filePath },
+  });
+  return response.data;
+};
+
 export const healthCheck = async (): Promise<{ status: string }> => {
   const response = await api.get("/health");
   return response.data;
