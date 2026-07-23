@@ -1,13 +1,31 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { getCodeIntelligence, CodeIntelligenceResponse } from "@/lib/api";
-import { DependencyGraph } from "./DependencyGraph";
-import { ModuleExplorer } from "./ModuleExplorer";
-import { ComplexityHeatmap } from "./ComplexityHeatmap";
-import { RiskIndicators } from "./RiskIndicators";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { Loader2, AlertCircle, Cpu, Network, Folder, Grid, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const DependencyGraph = dynamic(() => import("./DependencyGraph").then((mod) => mod.DependencyGraph), {
+  loading: () => <div className="p-8"><Skeleton className="h-96 w-full" /></div>,
+  ssr: false,
+});
+
+const ModuleExplorer = dynamic(() => import("./ModuleExplorer").then((mod) => mod.ModuleExplorer), {
+  loading: () => <div className="p-8"><Skeleton className="h-96 w-full" /></div>,
+  ssr: false,
+});
+
+const ComplexityHeatmap = dynamic(() => import("./ComplexityHeatmap").then((mod) => mod.ComplexityHeatmap), {
+  loading: () => <div className="p-8"><Skeleton className="h-96 w-full" /></div>,
+  ssr: false,
+});
+
+const RiskIndicators = dynamic(() => import("./RiskIndicators").then((mod) => mod.RiskIndicators), {
+  loading: () => <div className="p-8"><Skeleton className="h-96 w-full" /></div>,
+  ssr: false,
+});
 
 interface IntelligenceViewProps {
   repositoryId: string;

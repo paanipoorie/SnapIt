@@ -4,12 +4,20 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Loader2, AlertCircle, GitBranch, ExternalLink, Clock, TrendingUp, Cpu } from "lucide-react";
 import { cn } from "@/lib/utils";
+import dynamic from "next/dynamic";
 import { Timeline } from "@/components/timeline/Timeline";
 import { Inspector } from "@/components/timeline/Inspector";
-import { EvolutionView } from "@/components/evolution/EvolutionView";
-import { IntelligenceView } from "@/components/intelligence/IntelligenceView";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { FileHistoryModal } from "@/components/evolution/FileHistoryModal";
+
+const EvolutionView = dynamic(() => import("@/components/evolution/EvolutionView").then((mod) => mod.EvolutionView), {
+  loading: () => <div className="p-8"><Skeleton className="h-96 w-full" /></div>,
+});
+
+const IntelligenceView = dynamic(() => import("@/components/intelligence/IntelligenceView").then((mod) => mod.IntelligenceView), {
+  loading: () => <div className="p-8"><Skeleton className="h-96 w-full" /></div>,
+});
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { loadRepository, getTimeline, getMilestones, Commit, Milestone } from "@/lib/api";
