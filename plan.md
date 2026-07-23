@@ -135,7 +135,7 @@ Only then move forward.
 
 ---
 
-# Phase 1 — Repository Ingestion
+# Phase 1 — Repository Ingestion (Completed ✓)
 
 ## Goal
 
@@ -165,7 +165,7 @@ Timeline API works.
 
 ---
 
-# Phase 2 — Timeline Experience
+# Phase 2 — Timeline Experience (Completed ✓)
 
 ## Goal
 
@@ -215,7 +215,7 @@ Interactive repository timeline.
 
 ---
 
-# Phase 3 — Repository Explorer
+# Phase 3 — Repository Explorer (Completed ✓)
 
 ## Goal
 
@@ -278,7 +278,7 @@ Users can browse any repository snapshot.
 
 ---
 
-# Phase 4 — Repository Evolution
+# Phase 4 — Repository Evolution (Completed ✓)
 
 ## Goal
 
@@ -340,7 +340,7 @@ Developers understand repository evolution.
 
 ---
 
-# Phase 5 — Code Intelligence
+# Phase 5 — Code Intelligence (Completed ✓)
 
 ## Goal
 
