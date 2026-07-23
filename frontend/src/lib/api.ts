@@ -230,4 +230,68 @@ export const healthCheck = async (): Promise<{ status: string }> => {
   return response.data;
 };
 
+export interface IntelligenceNode {
+  id: string;
+  label: string;
+  path: string;
+  package: string;
+  type: string;
+  language: string;
+  linesOfCode: number;
+  cyclomaticComplexity: number;
+  maintainabilityIndex: number;
+  functionsCount: number;
+  importsCount: number;
+  churnCount: number;
+  riskScore: number;
+}
+
+export interface IntelligenceEdge {
+  source: string;
+  target: string;
+  type: string;
+}
+
+export interface RiskHotspot {
+  path: string;
+  language: string;
+  linesOfCode: number;
+  cyclomaticComplexity: number;
+  churnCount: number;
+  maintainabilityIndex: number;
+  riskScore: number;
+  riskLevel: "HIGH" | "MEDIUM" | "LOW";
+}
+
+export interface ModuleSummary {
+  name: string;
+  path: string;
+  fileCount: number;
+  totalLoc: number;
+  avgComplexity: number;
+  avgMaintainability: number;
+}
+
+export interface CodeIntelligenceResponse {
+  commitHash: string;
+  totalFiles: number;
+  totalLoc: number;
+  avgComplexity: number;
+  avgMaintainability: number;
+  nodes: IntelligenceNode[];
+  edges: IntelligenceEdge[];
+  hotspots: RiskHotspot[];
+  modules: ModuleSummary[];
+}
+
+export const getCodeIntelligence = async (
+  repositoryId: string,
+  commitHash?: string
+): Promise<CodeIntelligenceResponse> => {
+  const response = await api.get<CodeIntelligenceResponse>(`/repositories/${repositoryId}/intelligence`, {
+    params: commitHash ? { commit: commitHash } : {},
+  });
+  return response.data;
+};
+
 export default api;
