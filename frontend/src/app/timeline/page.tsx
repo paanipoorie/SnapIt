@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Loader2, AlertCircle, GitBranch, ExternalLink, Clock, TrendingUp } from "lucide-react";
+import { Loader2, AlertCircle, GitBranch, ExternalLink, Clock, TrendingUp, Cpu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Timeline } from "@/components/timeline/Timeline";
 import { Inspector } from "@/components/timeline/Inspector";
 import { EvolutionView } from "@/components/evolution/EvolutionView";
+import { IntelligenceView } from "@/components/intelligence/IntelligenceView";
 import { FileHistoryModal } from "@/components/evolution/FileHistoryModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +23,7 @@ export default function TimelinePage() {
   const [isLoadingTimeline, setIsLoadingTimeline] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"timeline" | "evolution">("timeline");
+  const [viewMode, setViewMode] = useState<"timeline" | "evolution" | "intelligence">("timeline");
   const [fileHistoryPath, setFileHistoryPath] = useState<string | null>(null);
 
   const handleLoadRepository = async (e: React.FormEvent) => {
@@ -251,6 +252,18 @@ export default function TimelinePage() {
                 <TrendingUp className="h-3.5 w-3.5 text-primary" />
                 Evolution
               </button>
+              <button
+                onClick={() => setViewMode("intelligence")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1 rounded-md transition-all",
+                  viewMode === "intelligence"
+                    ? "bg-background text-foreground shadow-sm font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Cpu className="h-3.5 w-3.5 text-indigo-400" />
+                Code Intelligence
+              </button>
             </div>
           </div>
 
@@ -317,12 +330,20 @@ export default function TimelinePage() {
               />
             </div>
           </>
-        ) : (
+        ) : viewMode === "evolution" ? (
           <div className="w-full h-full overflow-y-auto">
             <EvolutionView
               repositoryId={repositoryId}
               onOpenFileHistory={(filePath) => setFileHistoryPath(filePath)}
               onSelectCommit={handleSelectCommitByHash}
+            />
+          </div>
+        ) : (
+          <div className="w-full h-full overflow-hidden">
+            <IntelligenceView
+              repositoryId={repositoryId}
+              commitHash={selectedCommit?.hash}
+              onSelectFile={(filePath) => setFileHistoryPath(filePath)}
             />
           </div>
         )}
