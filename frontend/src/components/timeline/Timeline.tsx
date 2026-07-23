@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronUp, ChevronDown, GitBranch, Loader2, AlertCircle } from "lucide-react";
+import { ChevronUp, ChevronDown, GitBranch, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CommitMarker } from "./CommitMarker";
 import { Submarine } from "./Submarine";
@@ -18,21 +18,22 @@ interface Commit {
 }
 
 interface TimelineProps {
-  repositoryId: string;
+  repositoryId?: string;
   commits: Commit[];
   selectedIndex: number | null;
   onSelect: (index: number) => void;
   isLoading?: boolean;
   milestones?: Milestone[];
+  showSubmarine?: boolean;
 }
 
 export function Timeline({
-  repositoryId,
   commits,
   selectedIndex,
   onSelect,
   isLoading,
   milestones = [],
+  showSubmarine = true,
 }: TimelineProps) {
   const timelineRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -70,7 +71,7 @@ export function Timeline({
     });
   };
 
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     if (!timelineRef.current || !scrollContainerRef.current) return;
 
     const markers = timelineRef.current.querySelectorAll('[data-marker-index]');
@@ -95,7 +96,7 @@ export function Timeline({
     if (closestIndex !== selectedIndex) {
       onSelect(closestIndex);
     }
-  };
+  }, [selectedIndex, onSelect]);
 
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -103,7 +104,7 @@ export function Timeline({
 
     container.addEventListener("scroll", handleScroll, { passive: true });
     return () => container.removeEventListener("scroll", handleScroll);
-  }, [selectedIndex, commits.length, onSelect]);
+  }, [handleScroll]);
 
   const scrollToTop = () => {
     scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -143,11 +144,13 @@ export function Timeline({
           className="relative w-full"
           style={{ minHeight: containerHeight || "auto" }}
         >
-          <Submarine
-            selectedIndex={selectedIndex ?? commits.length - 1}
-            totalCommits={commits.length}
-            containerHeight={containerHeight || commits.length * 120}
-          />
+          {showSubmarine && (
+            <Submarine
+              selectedIndex={selectedIndex ?? commits.length - 1}
+              totalCommits={commits.length}
+              containerHeight={containerHeight || commits.length * 120}
+            />
+          )}
 
           <div className="relative z-10 px-4">
             {commits.map((commit, index) => (

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { RiskHotspot } from "@/lib/api";
-import { AlertOctagon, Flame, ShieldAlert, ArrowUpRight, CheckCircle2 } from "lucide-react";
+import { AlertOctagon, ShieldAlert, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface RiskIndicatorsProps {

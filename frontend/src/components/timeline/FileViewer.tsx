@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useRef, useEffect } from "react";
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { Loader2, X, Copy, FileText } from "lucide-react";
+import { X, Copy, FileText } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface FileViewerProps {
@@ -48,7 +48,7 @@ const languageMap: Record<string, string> = {
   plaintext: "plaintext",
 };
 
-function highlightCode(code: string, _language: string): string {
+function highlightCode(code: string): string {
   if (!code) return "";
   
   const escaped = code
@@ -65,13 +65,10 @@ function highlightCode(code: string, _language: string): string {
 }
 
 export function FileViewer({ file, onClose }: FileViewerProps) {
-  const preRef = useRef<HTMLDivElement>(null);
-  const highlightedRef = useRef<string>("");
-
   const language = useMemo(() => {
     if (!file) return "plaintext";
     return languageMap[file.language] || "plaintext";
-  }, [file?.language]);
+  }, [file]);
 
   const content = useMemo(() => {
     if (!file) return "";
@@ -81,23 +78,10 @@ export function FileViewer({ file, onClose }: FileViewerProps) {
     return file.content;
   }, [file]);
 
-  const lineCount = useMemo(() => {
-    if (!content) return 0;
-    return content.split("\n").length;
-  }, [content]);
-
-  // Apply syntax highlighting
-  useEffect(() => {
-    if (!file || file.binary) {
-      highlightedRef.current = content;
-      return;
-    }
-    
-    highlightedRef.current = highlightCode(content, language);
-    if (preRef.current) {
-      preRef.current.innerHTML = highlightedRef.current;
-    }
-  }, [content, language]);
+  const highlightedHtml = useMemo(() => {
+    if (!file || file.binary) return content;
+    return highlightCode(content);
+  }, [file, content]);
 
   if (!file) {
     return (
@@ -194,7 +178,7 @@ export function FileViewer({ file, onClose }: FileViewerProps) {
           </div>
         </motion.div>
       ) : (
-        <div className="flex-1 overflow-auto p-4" ref={preRef}>
+        <div className="flex-1 overflow-auto p-4">
           <pre
             className={cn(
               "font-mono text-sm line-numbers",
@@ -204,7 +188,7 @@ export function FileViewer({ file, onClose }: FileViewerProps) {
               counterReset: "line",
             }}
           >
-            <code className={language} dangerouslySetInnerHTML={{ __html: highlightedRef.current }} />
+            <code className={language} dangerouslySetInnerHTML={{ __html: highlightedHtml }} />
           </pre>
         </div>
       )}

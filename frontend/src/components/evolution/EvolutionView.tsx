@@ -11,10 +11,6 @@ import {
   Award,
   Milestone as MilestoneIcon,
   Loader2,
-  Calendar,
-  ExternalLink,
-  Plus,
-  Minus,
   History,
 } from "lucide-react";
 import {
@@ -49,8 +45,10 @@ export function EvolutionView({ repositoryId, onOpenFileHistory, onSelectCommit 
   useEffect(() => {
     if (!repositoryId) return;
 
-    setIsLoading(true);
-    setError(null);
+    Promise.resolve().then(() => {
+      setIsLoading(true);
+      setError(null);
+    });
 
     Promise.all([
       getEvolutionStats(repositoryId),

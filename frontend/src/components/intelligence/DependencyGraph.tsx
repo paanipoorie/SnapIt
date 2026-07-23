@@ -16,7 +16,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { IntelligenceNode, IntelligenceEdge } from "@/lib/api";
-import { Search, Filter, Layers, Code2, AlertTriangle, Activity } from "lucide-react";
+import { Search, Filter, Layers, Code2, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DependencyGraphProps {
@@ -135,8 +135,8 @@ export function DependencyGraph({ nodes, edges, onSelectFile }: DependencyGraphP
     const flowNodes: Node[] = [];
     let groupX = 50;
 
-    Object.entries(packageGroups).forEach(([pkg, groupNodes]) => {
-      let nodeY = 50;
+    Object.entries(packageGroups).forEach(([, groupNodes]) => {
+      const nodeY = 50;
       const cols = 2;
       groupNodes.forEach((n, idx) => {
         const col = idx % cols;

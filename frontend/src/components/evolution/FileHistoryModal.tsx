@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, History, GitCommit, Calendar, User, FileCode, Plus, Minus, Loader2, ArrowRight } from "lucide-react";
+import { X, History, Calendar, User, FileCode, Plus, Minus, Loader2, ArrowRight } from "lucide-react";
 import { getFileHistory, FileHistoryEntry } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 
@@ -27,8 +27,10 @@ export function FileHistoryModal({
 
   useEffect(() => {
     if (isOpen && repositoryId && filePath) {
-      setIsLoading(true);
-      setError(null);
+      Promise.resolve().then(() => {
+        setIsLoading(true);
+        setError(null);
+      });
       getFileHistory(repositoryId, filePath)
         .then((data) => {
           setHistory(data);

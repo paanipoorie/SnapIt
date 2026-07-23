@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { ModuleSummary, IntelligenceNode } from "@/lib/api";
-import { Folder, FileCode, ChevronRight, ChevronDown, Activity, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Folder, FileCode, ChevronRight, ChevronDown, AlertCircle, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ModuleExplorerProps {

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { FileText, X, Loader2 } from "lucide-react";
+import { FileText, X } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface DiffFile {

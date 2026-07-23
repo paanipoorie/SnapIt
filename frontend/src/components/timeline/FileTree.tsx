@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
-import { ChevronRight, ChevronDown, FolderOpen, Folder, File, ChevronLeft } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { ChevronRight, FolderOpen, Folder, File } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TreeEntry {
@@ -137,16 +137,20 @@ export function FileTree({ tree, selectedPath, onFileSelect, onFolderToggle }: F
   }, [onFolderToggle]);
 
   // Auto-expand folders leading to selected file
-  useMemo(() => {
+  useEffect(() => {
     if (!selectedPath) return;
     const parts = selectedPath.split("/");
     let currentPath = "";
-    const newExpanded = new Set(expandedFolders);
-    for (let i = 0; i < parts.length - 1; i++) {
-      currentPath = currentPath ? `${currentPath}/${parts[i]}` : parts[i];
-      newExpanded.add(currentPath);
-    }
-    setExpandedFolders(newExpanded);
+    Promise.resolve().then(() => {
+      setExpandedFolders((prev) => {
+        const next = new Set(prev);
+        for (let i = 0; i < parts.length - 1; i++) {
+          currentPath = currentPath ? `${currentPath}/${parts[i]}` : parts[i];
+          next.add(currentPath);
+        }
+        return next;
+      });
+    });
   }, [selectedPath]);
 
   return (

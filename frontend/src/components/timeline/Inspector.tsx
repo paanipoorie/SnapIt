@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  GitBranch, Calendar, Mail, Hash, Copy, ExternalLink,
-  FileText, Folder, ChevronRight, ChevronDown, Loader2, X
+  GitBranch, Calendar, Hash, Copy, ExternalLink,
+  FileText, Folder, Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -63,55 +63,72 @@ export function Inspector({ commit, repositoryId }: InspectorProps) {
     navigator.clipboard.writeText(text);
   };
 
+  useEffect(() => {
+    if (!commit) return;
+    Promise.resolve().then(() => {
+      setTree([]);
+      setDiff(null);
+      setSelectedFile(null);
+    });
+  }, [commit]);
+
   // Load commit detail when commit changes
   useEffect(() => {
     if (!commit) return;
     
-    const loadDetail = async () => {
-      setLoading(prev => ({ ...prev, details: true }));
-      try {
-        const data = await getCommitDetail(repositoryId, commit.hash);
-        setDetail(data);
-      } catch (err) {
-        console.error("Failed to load commit detail:", err);
-      } finally {
-        setLoading(prev => ({ ...prev, details: false }));
-      }
+    let isSubscribed = true;
+    Promise.resolve().then(() => {
+      if (isSubscribed) setLoading(prev => ({ ...prev, details: true }));
+    });
+    getCommitDetail(repositoryId, commit.hash)
+      .then(data => {
+        if (isSubscribed) setDetail(data);
+      })
+      .catch(err => console.error("Failed to load commit detail:", err))
+      .finally(() => {
+        if (isSubscribed) setLoading(prev => ({ ...prev, details: false }));
+      });
+
+    return () => {
+      isSubscribed = false;
     };
-    
-    loadDetail();
   }, [commit, repositoryId]);
 
   // Load tree and diff when tab is activated
-  const loadTabData = useCallback(async (tab: Tab) => {
+  useEffect(() => {
     if (!commit) return;
     
-    if (tab === "files") {
-      setLoading(prev => ({ ...prev, files: true }));
-      try {
-        const data = await getCommitTree(repositoryId, commit.hash);
-        setTree(data);
-      } catch (err) {
-        console.error("Failed to load tree:", err);
-      } finally {
-        setLoading(prev => ({ ...prev, files: false }));
-      }
-    } else if (tab === "diff") {
-      setLoading(prev => ({ ...prev, diff: true }));
-      try {
-        const data = await getCommitDiff(repositoryId, commit.hash);
-        setDiff(data);
-      } catch (err) {
-        console.error("Failed to load diff:", err);
-      } finally {
-        setLoading(prev => ({ ...prev, diff: false }));
-      }
+    let isSubscribed = true;
+    if (activeTab === "files" && tree.length === 0) {
+      Promise.resolve().then(() => {
+        if (isSubscribed) setLoading(prev => ({ ...prev, files: true }));
+      });
+      getCommitTree(repositoryId, commit.hash)
+        .then(data => {
+          if (isSubscribed) setTree(data);
+        })
+        .catch(err => console.error("Failed to load tree:", err))
+        .finally(() => {
+          if (isSubscribed) setLoading(prev => ({ ...prev, files: false }));
+        });
+    } else if (activeTab === "diff" && !diff) {
+      Promise.resolve().then(() => {
+        if (isSubscribed) setLoading(prev => ({ ...prev, diff: true }));
+      });
+      getCommitDiff(repositoryId, commit.hash)
+        .then(data => {
+          if (isSubscribed) setDiff(data);
+        })
+        .catch(err => console.error("Failed to load diff:", err))
+        .finally(() => {
+          if (isSubscribed) setLoading(prev => ({ ...prev, diff: false }));
+        });
     }
-  }, [commit, repositoryId]);
 
-  useEffect(() => {
-    loadTabData(activeTab);
-  }, [activeTab, loadTabData]);
+    return () => {
+      isSubscribed = false;
+    };
+  }, [activeTab, commit, repositoryId, tree.length, diff]);
 
   const handleFileSelect = async (path: string) => {
     if (!commit) return;
@@ -208,7 +225,6 @@ export function Inspector({ commit, repositoryId }: InspectorProps) {
             <DetailsPanel 
               commit={commit} 
               detail={detail}
-              repositoryId={repositoryId}
               shortHash={shortHash}
               fullHash={fullHash}
               date={date}
@@ -257,8 +273,7 @@ function DetailsPanel({
   shortHash, 
   fullHash, 
   date, 
-  copyToClipboard,
-  repositoryId 
+  copyToClipboard
 }: { 
   commit: Commit; 
   detail: CommitDetailResponse | null; 
@@ -266,7 +281,6 @@ function DetailsPanel({
   fullHash: string; 
   date: string; 
   copyToClipboard: (text: string) => void;
-  repositoryId: string;
 }) {
   const parents = detail?.parents || [];
   const stats = detail?.stats || { additions: 0, deletions: 0, files: 0 };

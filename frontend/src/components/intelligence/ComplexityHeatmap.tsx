@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { IntelligenceNode } from "@/lib/api";
-import { Grid, Flame, AlertCircle, Info } from "lucide-react";
+import { Grid, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ComplexityHeatmapProps {

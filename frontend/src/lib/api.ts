@@ -15,7 +15,7 @@ export interface Commit {
   date: string;
 }
 
-export interface TimelineResponse extends Array<Commit> {}
+export type TimelineResponse = Commit[];
 
 export interface LoadRepositoryRequest {
   url: string;
@@ -89,8 +89,22 @@ export const loadRepository = async (
   return response.data;
 };
 
-export const getTimeline = async (repositoryId: string): Promise<TimelineResponse> => {
-  const response = await api.get<TimelineResponse>(`/repositories/${repositoryId}/timeline`);
+export interface TimelineFilterParams {
+  q?: string;
+  author?: string;
+  since?: string;
+  until?: string;
+  limit?: number;
+  page?: number;
+}
+
+export const getTimeline = async (
+  repositoryId: string,
+  params?: TimelineFilterParams
+): Promise<TimelineResponse> => {
+  const response = await api.get<TimelineResponse>(`/repositories/${repositoryId}/timeline`, {
+    params,
+  });
   return response.data;
 };
 
