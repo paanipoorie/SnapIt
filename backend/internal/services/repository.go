@@ -28,6 +28,7 @@ type RepositoryService struct {
 	gitService   *git.GitService
 	storagePath  string
 	repositories map[string]*models.Repository
+	cache        *MemoryCache
 	mu           sync.RWMutex
 	logger       *zap.Logger
 }
@@ -37,6 +38,7 @@ func NewRepositoryService(gitService *git.GitService, storagePath string, logger
 		gitService:   gitService,
 		storagePath:  storagePath,
 		repositories: make(map[string]*models.Repository),
+		cache:        NewMemoryCache(),
 		logger:       logger,
 	}
 }
@@ -269,6 +271,11 @@ func (s *RepositoryService) GetCommitDiff(repoID, hash string) (*models.DiffResp
 }
 
 func (s *RepositoryService) GetEvolutionStats(repoID string) (*models.EvolutionStatsResponse, error) {
+	cacheKey := "evolution:" + repoID
+	if cached, ok := s.cache.Get(cacheKey); ok {
+		return cached.(*models.EvolutionStatsResponse), nil
+	}
+
 	s.mu.RLock()
 	repo, exists := s.repositories[repoID]
 	s.mu.RUnlock()
@@ -283,6 +290,7 @@ func (s *RepositoryService) GetEvolutionStats(repoID string) (*models.EvolutionS
 		return nil, err
 	}
 
+	s.cache.Set(cacheKey, stats, 15*time.Minute)
 	return stats, nil
 }
 
@@ -359,6 +367,11 @@ func (s *RepositoryService) GetFileHistory(repoID, filePath string) ([]models.Fi
 }
 
 func (s *RepositoryService) GetCodeIntelligence(repoID, commitHash string) (*models.CodeIntelligenceResponse, error) {
+	cacheKey := "intel:" + repoID + ":" + commitHash
+	if cached, ok := s.cache.Get(cacheKey); ok {
+		return cached.(*models.CodeIntelligenceResponse), nil
+	}
+
 	s.mu.RLock()
 	repo, exists := s.repositories[repoID]
 	s.mu.RUnlock()
@@ -373,5 +386,6 @@ func (s *RepositoryService) GetCodeIntelligence(repoID, commitHash string) (*mod
 		return nil, err
 	}
 
+	s.cache.Set(cacheKey, intel, 30*time.Minute)
 	return intel, nil
 }

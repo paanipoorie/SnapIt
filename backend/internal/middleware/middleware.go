@@ -19,6 +19,8 @@ func Logger(logger *zap.Logger) fiber.Handler {
 		path := c.Path()
 		ip := c.IP()
 
+		c.Set("X-Response-Time", duration.String())
+
 		if status >= 500 {
 			logger.Error("HTTP request",
 				zap.String("method", method),
