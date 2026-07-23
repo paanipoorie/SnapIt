@@ -8,6 +8,7 @@ import { Timeline } from "@/components/timeline/Timeline";
 import { Inspector } from "@/components/timeline/Inspector";
 import { EvolutionView } from "@/components/evolution/EvolutionView";
 import { IntelligenceView } from "@/components/intelligence/IntelligenceView";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { FileHistoryModal } from "@/components/evolution/FileHistoryModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -332,19 +333,23 @@ export default function TimelinePage() {
           </>
         ) : viewMode === "evolution" ? (
           <div className="w-full h-full overflow-y-auto">
-            <EvolutionView
-              repositoryId={repositoryId}
-              onOpenFileHistory={(filePath) => setFileHistoryPath(filePath)}
-              onSelectCommit={handleSelectCommitByHash}
-            />
+            <ErrorBoundary fallbackTitle="Evolution View Error">
+              <EvolutionView
+                repositoryId={repositoryId}
+                onOpenFileHistory={(filePath) => setFileHistoryPath(filePath)}
+                onSelectCommit={handleSelectCommitByHash}
+              />
+            </ErrorBoundary>
           </div>
         ) : (
           <div className="w-full h-full overflow-hidden">
-            <IntelligenceView
-              repositoryId={repositoryId}
-              commitHash={selectedCommit?.hash}
-              onSelectFile={(filePath) => setFileHistoryPath(filePath)}
-            />
+            <ErrorBoundary fallbackTitle="Code Intelligence Error">
+              <IntelligenceView
+                repositoryId={repositoryId}
+                commitHash={selectedCommit?.hash}
+                onSelectFile={(filePath) => setFileHistoryPath(filePath)}
+              />
+            </ErrorBoundary>
           </div>
         )}
       </main>
