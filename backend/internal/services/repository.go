@@ -90,6 +90,11 @@ func (s *RepositoryService) LoadRepository(url string) (*models.LoadRepositoryRe
 }
 
 func (s *RepositoryService) GetTimeline(repoID string) (models.TimelineResponse, error) {
+	cacheKey := "timeline:" + repoID
+	if cached, ok := s.cache.Get(cacheKey); ok {
+		return cached.(models.TimelineResponse), nil
+	}
+
 	s.mu.RLock()
 	repo, exists := s.repositories[repoID]
 	s.mu.RUnlock()
@@ -119,6 +124,7 @@ func (s *RepositoryService) GetTimeline(repoID string) (models.TimelineResponse,
 		return timeline[i].Date.Before(timeline[j].Date)
 	})
 
+	s.cache.Set(cacheKey, timeline, 15*time.Minute)
 	return timeline, nil
 }
 

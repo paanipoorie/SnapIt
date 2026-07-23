@@ -43,6 +43,14 @@ type CommitResponse struct {
 
 type TimelineResponse []CommitResponse
 
+type PaginatedTimelineResponse struct {
+	Total      int              `json:"total"`
+	Page       int              `json:"page"`
+	Limit      int              `json:"limit"`
+	TotalPages int              `json:"totalPages"`
+	Commits    TimelineResponse `json:"commits"`
+}
+
 type ErrorResponse struct {
 	Error string `json:"error"`
 }

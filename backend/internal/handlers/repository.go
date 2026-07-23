@@ -67,6 +67,41 @@ func (h *RepositoryHandler) GetTimeline(c *fiber.Ctx) error {
 		}
 	}
 
+	// Optional pagination support
+	limitStr := c.Query("limit")
+	if limitStr != "" {
+		limit := c.QueryInt("limit", 50)
+		page := c.QueryInt("page", 1)
+		if page < 1 {
+			page = 1
+		}
+		if limit < 1 {
+			limit = 50
+		}
+
+		total := len(timeline)
+		totalPages := (total + limit - 1) / limit
+
+		start := (page - 1) * limit
+		end := start + limit
+
+		if start > total {
+			start = total
+		}
+		if end > total {
+			end = total
+		}
+
+		paginatedCommits := timeline[start:end]
+		return c.JSON(models.PaginatedTimelineResponse{
+			Total:      total,
+			Page:       page,
+			Limit:      limit,
+			TotalPages: totalPages,
+			Commits:    paginatedCommits,
+		})
+	}
+
 	return c.JSON(timeline)
 }
 
