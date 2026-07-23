@@ -357,3 +357,21 @@ func (s *RepositoryService) GetFileHistory(repoID, filePath string) ([]models.Fi
 
 	return history, nil
 }
+
+func (s *RepositoryService) GetCodeIntelligence(repoID, commitHash string) (*models.CodeIntelligenceResponse, error) {
+	s.mu.RLock()
+	repo, exists := s.repositories[repoID]
+	s.mu.RUnlock()
+
+	if !exists {
+		return nil, ErrRepositoryNotFound
+	}
+
+	intel, err := s.gitService.GetCodeIntelligence(repo.LocalPath, commitHash)
+	if err != nil {
+		s.logger.Error("Failed to get code intelligence", zap.Error(err), zap.String("repoID", repoID), zap.String("commit", commitHash))
+		return nil, err
+	}
+
+	return intel, nil
+}

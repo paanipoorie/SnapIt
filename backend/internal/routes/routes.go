@@ -31,4 +31,5 @@ func SetupRoutes(app *fiber.App, repoService *services.RepositoryService, logger
 	api.Get("/repositories/:repositoryId/hotspots", repoHandler.GetHotspots)
 	api.Get("/repositories/:repositoryId/milestones", repoHandler.GetMilestones)
 	api.Get("/repositories/:repositoryId/file-history", repoHandler.GetFileHistory)
+	api.Get("/repositories/:repositoryId/intelligence", repoHandler.GetCodeIntelligence)
 }

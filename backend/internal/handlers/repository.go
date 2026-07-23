@@ -267,3 +267,24 @@ func (h *RepositoryHandler) GetFileHistory(c *fiber.Ctx) error {
 
 	return c.JSON(history)
 }
+
+func (h *RepositoryHandler) GetCodeIntelligence(c *fiber.Ctx) error {
+	repoID := c.Params("repositoryId")
+	if repoID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{Error: "Repository ID is required"})
+	}
+
+	commitHash := c.Query("commit")
+	intel, err := h.service.GetCodeIntelligence(repoID, commitHash)
+	if err != nil {
+		if err == services.ErrRepositoryNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "Repository not found"})
+		}
+		if err == services.ErrCommitNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(models.ErrorResponse{Error: "Commit not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(models.ErrorResponse{Error: "Failed to process code intelligence"})
+	}
+
+	return c.JSON(intel)
+}

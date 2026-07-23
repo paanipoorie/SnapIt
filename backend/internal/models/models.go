@@ -156,3 +156,57 @@ type FileHistoryEntry struct {
 	Additions  int       `json:"additions"`
 	Deletions  int       `json:"deletions"`
 }
+
+type CodeIntelligenceResponse struct {
+	CommitHash           string             `json:"commitHash"`
+	TotalFiles           int                `json:"totalFiles"`
+	TotalLOC             int                `json:"totalLoc"`
+	AvgComplexity        float64            `json:"avgComplexity"`
+	AvgMaintainability   float64            `json:"avgMaintainability"`
+	Nodes                []IntelligenceNode `json:"nodes"`
+	Edges                []IntelligenceEdge `json:"edges"`
+	Hotspots             []RiskHotspot      `json:"hotspots"`
+	Modules              []ModuleSummary    `json:"modules"`
+}
+
+type IntelligenceNode struct {
+	ID                   string  `json:"id"`
+	Label                string  `json:"label"`
+	Path                 string  `json:"path"`
+	Package              string  `json:"package"`
+	Type                 string  `json:"type"`
+	Language             string  `json:"language"`
+	LinesOfCode          int     `json:"linesOfCode"`
+	CyclomaticComplexity int     `json:"cyclomaticComplexity"`
+	MaintainabilityIndex float64 `json:"maintainabilityIndex"`
+	FunctionsCount       int     `json:"functionsCount"`
+	ImportsCount         int     `json:"importsCount"`
+	ChurnCount           int     `json:"churnCount"`
+	RiskScore            float64 `json:"riskScore"`
+}
+
+type IntelligenceEdge struct {
+	Source string `json:"source"`
+	Target string `json:"target"`
+	Type   string `json:"type"`
+}
+
+type RiskHotspot struct {
+	Path                 string  `json:"path"`
+	Language             string  `json:"language"`
+	LinesOfCode          int     `json:"linesOfCode"`
+	CyclomaticComplexity int     `json:"cyclomaticComplexity"`
+	ChurnCount           int     `json:"churnCount"`
+	MaintainabilityIndex float64 `json:"maintainabilityIndex"`
+	RiskScore            float64 `json:"riskScore"`
+	RiskLevel            string  `json:"riskLevel"`
+}
+
+type ModuleSummary struct {
+	Name                 string  `json:"name"`
+	Path                 string  `json:"path"`
+	FileCount            int     `json:"fileCount"`
+	TotalLOC             int     `json:"totalLoc"`
+	AvgComplexity        float64 `json:"avgComplexity"`
+	AvgMaintainability   float64 `json:"avgMaintainability"`
+}
